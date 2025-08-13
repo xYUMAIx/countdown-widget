@@ -9,20 +9,7 @@
   html,body{margin:0;padding:0;background:transparent;font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial,sans-serif;color:var(--text)}
   #countdown{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;align-items:center;padding:8px 6px;box-sizing:border-box}
   .unit{background:transparent;border-radius:12px;padding:10px 8px;display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:76px}
-  .number{
-    font-weight:700;
-    font-size:clamp(22px,5.5vw,44px);
-    line-height:1;
-    margin:0;
-    color:var(--text);
-    /* transition für dezentes fade */
-    transition: opacity 180ms ease, transform 180ms ease;
-    will-change: opacity, transform;
-  }
-  .number.changing{
-    opacity: 0;
-    transform: translateY(-4px);
-  }
+  .number{font-weight:700;font-size:clamp(22px,5.5vw,44px);line-height:1;margin:0;color:var(--text)}
   .label{margin-top:6px;font-size:11px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;line-height:1}
   @media (max-width:520px){#countdown{grid-template-columns:repeat(2,1fr)}}
   body{background:transparent}
@@ -41,10 +28,37 @@
   // Ziel: 1. Juni 2028, 00:00:00 (lokale Zeitzone)
   const target = new Date(2028,5,1,0,0,0);
   const prev = {days:null,hours:null,minutes:null,seconds:null};
-  const timers = {days:null,hours:null,minutes:null,seconds:null};
 
   function pad(n){ return String(n).padStart(2,'0'); }
 
   function updateUnit(unit, value){
     const el = document.querySelector('#countdown .unit[data-unit="'+unit+'"] .number');
-    if (!el) return
+    if (!el) return;
+    if (prev[unit] !== value){
+      el.textContent = (unit === 'days') ? String(value) : pad(value);
+      prev[unit] = value;
+    }
+  }
+
+  function tick(){
+    const now = new Date();
+    let diff = target - now;
+    if (diff < 0) diff = 0;
+    const totalSec = Math.floor(diff/1000);
+    const seconds = totalSec % 60;
+    const minutes = Math.floor(totalSec/60) % 60;
+    const hours = Math.floor(totalSec/3600) % 24;
+    const days = Math.floor(totalSec/86400);
+    updateUnit('days', days);
+    updateUnit('hours', hours);
+    updateUnit('minutes', minutes);
+    updateUnit('seconds', seconds);
+    if (diff === 0) clearInterval(iid);
+  }
+
+  tick();
+  const iid = setInterval(tick,1000);
+})();
+</script>
+</body>
+</html>
